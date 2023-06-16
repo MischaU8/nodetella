@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import datetime
+import json
 import re
 from typing import cast
 
@@ -77,7 +78,7 @@ def extract_data_from_html(id):
                 data["license"] = license.string.strip()
             tags = tags_div.css.select('a[href^="materials?tag="]')
             if tags:
-                data["tags"] = ",".join([tag.string.strip() for tag in tags])
+                data["tags"] = json.dumps([tag.string.strip() for tag in tags])
     return data
 
 
@@ -110,6 +111,13 @@ def main():
             print(f"saved {id}")
         else:
             print(f"skipped {id}")
+
+    # XXX fix tags
+    # for row in db.query("select id, tags from materials"):
+    #     if row['tags']:
+    #         print(row['id'], row['tags'])
+    #         tags = row['tags'].split(',')
+    #         db['materials'].update(row['id'], {'tags': json.dumps(tags)})
 
 
 def _ensure_table(db: sqlite_utils.Database, table_name: str, *args, **kwargs):
