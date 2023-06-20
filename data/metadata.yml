@@ -64,6 +64,15 @@ databases:
         title: Most frequently used node types
         description_html: |-
           <p>Which node types are most frequently used?</p>
+      most_complex_materials:
+        sql: |-
+          SELECT m.id, m.name, count(*) as node_count, url
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes'
+          GROUP BY m.id order by node_count desc
+        title: Most complex materials
+        description_html: |-
+          <p>Which materials are the most complex? As determined by the number of nodes</p>
       node_comments:
         sql: |- 
           SELECT m.id, m.name, json_extract(json_tree.value, '$.type') as node_type, json_extract(json_tree.value, '$.title') as comment_title, json_extract(json_tree.value, '$.text') as comment_text
@@ -89,15 +98,6 @@ databases:
         title: Image paths
         description_html: |-
           <p>Which materials have hardcoded image paths? These are problematic as they are not shipped with the materials.</p>
-      most_complex_materials:
-        sql: |-
-          SELECT m.id, m.name, count(*) as node_count, url
-          FROM materials m, json_tree(m.json, '$.nodes')
-          WHERE json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes'
-          GROUP BY m.id order by node_count desc
-        title: Most complex materials
-        description_html: |-
-          <p>Which materials are the most complex? As determined by the number of nodes</p>
 
 plugins:
   datasette-block-robots:
