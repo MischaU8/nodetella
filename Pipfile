@@ -9,8 +9,12 @@ datasette = "*"
 sqlite-utils = "*"
 click = "*"
 beautifulsoup4 = "*"
+datasette-gzip = "*"
+datasette-block-robots = "*"
+datasette-template-sql = "*"
+datasette-vega = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.11"
+python_version = "3"

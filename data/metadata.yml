@@ -1,0 +1,104 @@
+title: Nodetella - Material Maker node statistics
+description_html: |-
+  <p>Nodetella provides statistics for the Material Maker materials from the public assets website.</p>
+
+about: Nodetella GitHub
+about_url: https://github.com/MischaU8/nodetella
+source: Material Maker Materials
+source_url: https://www.materialmaker.org/materials?type=material
+databases:
+  material_maker:
+    tables:
+      materials:
+        size: 50
+        sort_desc: id
+    queries:
+      author_leaderboard:
+        sql: |- 
+          select author_name, count(*) as cnt from materials group by author_id order by cnt desc limit 25;
+        title: Author Leaderboard
+        description_html: |-
+          <p>What are the top 10 authors with the most uploaded materials?</p>
+      mm_version_counts:
+        sql: |- 
+          select mm_version, count(*) as cnt from materials where type=0 group by mm_version order by cnt desc;
+        title: Uploads per version
+        description_html: |-
+          <p>Which version of Material Maker are most used to upload the public assets?</p>
+      materials_per_month:
+        sql: |- 
+          select strftime('%Y-%m', added_at) as month_added, count(*) as cnt from materials where type=0 group by month_added order by month_added;
+        title: Uploads per month
+        description_html: |-
+          <p>Is #Mayterials a thing?</p>
+      popular_tags:
+        sql: |- 
+          select value, count(*) as cnt from materials m, json_each(tags) group by lower(value) order by cnt desc limit 25;
+        title: Popular tags
+        description_html: |-
+          <p>Which are the most common tags?</p>
+      
+      inspect_nodes:
+        sql: |- 
+          SELECT m.id, json_extract(json_tree.value, '$.type'), json_tree.path, json_tree.value
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE m.id = :material_id and json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes';
+        title: Inspect Nodes
+        description_html: |-
+          <p>Inspect the nodes for a given material ID # (try <em>761</em>)</p>
+      node_count_per_type:
+        sql: |-
+          SELECT json_extract(json_tree.value, '$.type') as node_type, count(*) as node_count
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE m.id = :material_id AND json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes'
+          GROUP by node_type order by node_count desc;
+        title: Node count per type
+        description_html: |-
+          <p>Which node types are most used in a specific material? (try <em>761</em>)</p>
+      most_frequent_nodes:
+        sql: |- 
+          SELECT json_extract(json_tree.value, '$.type') as node_type, count(*) as cnt
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes'
+          group by node_type order by cnt desc;
+        title: Most frequently used node types
+        description_html: |-
+          <p>Which node types are most frequently used?</p>
+      node_comments:
+        sql: |- 
+          SELECT m.id, m.name, json_extract(json_tree.value, '$.type') as node_type, json_extract(json_tree.value, '$.title') as comment_title, json_extract(json_tree.value, '$.text') as comment_text
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes' and node_type = 'comment';
+        title: Node comments
+        description_html: |-
+          <p>What comments are present in nodes?</p>
+      export_paths:
+        sql: |- 
+          SELECT m.id, m.name, json_extract(json_tree.value, '$.type') as node_type, json_extract(json_tree.value, '$.export_paths') as export_paths
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes' and node_type = 'material' and export_paths != "{}";
+        title: Export paths
+        description_html: |-
+          <p>What export paths are found in published assets? This gives in insight in the game / render engines being used.</p>
+      image_paths:
+        sql: |- 
+          SELECT m.id, m.name, json_extract(json_tree.value, '$.type') as node_type, json_extract(json_tree.value, '$.parameters.image') as image_path
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes' and node_type = 'image'
+          and image_path not like '%MATERIAL_MAKER_PATH%';
+        title: Image paths
+        description_html: |-
+          <p>Which materials have hardcoded image paths? These are problematic as they are not shipped with the materials.</p>
+      most_complex_materials:
+        sql: |-
+          SELECT m.id, m.name, count(*) as node_count, url
+          FROM materials m, json_tree(m.json, '$.nodes')
+          WHERE json_tree.type="object" and typeof(json_tree.key) = 'integer' and json_tree.path like '%nodes'
+          GROUP BY m.id order by node_count desc
+        title: Most complex materials
+        description_html: |-
+          <p>Which materials are the most complex? As determined by the number of nodes</p>
+
+plugins:
+  datasette-block-robots:
+    allow_only_index: true

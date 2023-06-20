@@ -12,9 +12,9 @@ import sqlite_utils
 
 BASE_URL = "https://www.materialmaker.org"
 MIN_MAT_ID = 1
-MAX_MAT_ID = 762
+MAX_MAT_ID = 763
 
-DB_PATH = "data/materials.db"
+DB_PATH = "data/material_maker.db"
 
 
 def extract_data_from_json(id):
