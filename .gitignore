@@ -1,0 +1,11 @@
+.DS_Store
+.venv/
+.vscode/
+__pycache__/
+build/
+
+*.csv
+*.db
+*.jl
+*.log
+*.pyc
